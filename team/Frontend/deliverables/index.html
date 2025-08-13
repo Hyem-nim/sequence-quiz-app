@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>수열 퀴즈 앱 - 중학교 3학년 수학</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+
+        .sequence-container {
+            margin: 40px 0;
+        }
+
+        .sequence-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .sequence-box {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .number-box {
+            background: #f8f9fa;
+            border: 3px solid #e9ecef;
+            color: #495057;
+        }
+
+        .hidden-box {
+            background: #fff3cd;
+            border: 3px dashed #ffc107;
+            color: #856404;
+            font-size: 2.2em;
+        }
+
+        .answer-section {
+            margin: 40px 0;
+        }
+
+        .answer-input {
+            font-size: 1.5em;
+            padding: 15px 20px;
+            border: 3px solid #dee2e6;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+            margin-right: 15px;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+        }
+
+        .btn {
+            font-size: 1.2em;
+            padding: 15px 25px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .feedback {
+            margin: 30px 0;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.3em;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .feedback.success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .feedback.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .hint-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .hint-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 2em;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .sequence-grid {
+                grid-template-columns: repeat(4, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .sequence-box {
+                font-size: 1.4em;
+            }
+            
+            .hidden-box {
+                font-size: 1.8em;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .answer-input {
+                width: 150px;
+                margin-bottom: 15px;
+            }
+            
+            .btn {
+                margin: 5px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 수열 퀴즈</h1>
+        <p class="subtitle">중학교 3학년 수학 - 빈칸에 들어갈 숫자를 맞춰보세요!</p>
+        
+        <div class="sequence-container">
+            <div class="sequence-grid" id="sequenceGrid">
+                <!-- 수열이 여기 표시됩니다 -->
+            </div>
+        </div>
+        
+        <div class="answer-section">
+            <input type="number" id="answerInput" class="answer-input" placeholder="답안 입력">
+            <button onclick="checkAnswer()" class="btn btn-primary">확인</button>
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="showHint()" class="btn btn-warning">💡 힌트</button>
+            <button onclick="showAnswer()" class="btn btn-secondary">📖 정답보기</button>
+            <button onclick="newProblem()" class="btn btn-success">🔄 새 문제</button>
+        </div>
+    </div>
+
+    <!-- 힌트 모달 -->
+    <div class="hint-modal" id="hintModal">
+        <div class="hint-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <h3 id="modalTitle">힌트</h3>
+            <div id="modalContent"></div>
+            <button onclick="closeModal()" class="btn btn-primary" style="margin-top: 20px;">닫기</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSequence = null;
+        let hintStep = 0;
+
+        // 수열 생성 클래스
+        class SequenceGenerator {
+            static generateRandomSequence() {
+                const types = ['arithmetic', 'geometric', 'quadratic', 'fibonacci', 'polynomial'];
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                switch (type) {
+                    case 'arithmetic': return this.generateArithmetic();
+                    case 'geometric': return this.generateGeometric();
+                    case 'quadratic': return this.generateQuadratic();
+                    case 'fibonacci': return this.generateFibonacci();
+                    case 'polynomial': return this.generatePolynomial();
+                }
+            }
+            
+            static generateArithmetic() {
+                const first = Math.floor(Math.random() * 10) + 1;
+                const diff = Math.floor(Math.random() * 5) + 1;
+                const numbers = [];
+                
+                for (let i = 0; i < 7; i++) {
+                    numbers.push(first + i * diff);
+                }
+                
+                return {
+                    numbers,
+                    answer: numbers[4],
+                    type: 'arithmetic',
+                    hint1: '이 수열은 등차수열입니다.',
+                    hint2: `각 항이 ${diff}씩 증가합니다.`,
+                    explanation: `등차수열입니다. 첫째항이 ${first}이고 공차가 ${diff}인 등차수열의 일반항은 a_n = ${first} + (n-1) × ${diff} 입니다. 따라서 5번째 항은 ${numbers[4]}입니다.`
+                };
+            }
+            
+            static generateGeometric() {
+                const first = Math.floor(Math.random() * 3) + 1;
+                const ratio = Math.floor(Math.random() * 3) + 2;
+                const numbers = [];
+                
+                for (let i = 0; i < 7; i++) {
+                    numbers.push(first * Math.pow(ratio, i));
+                }
+                
+                return {
+                    numbers,
+                    answer: numbers[4],
+                    type: 'geometric',
+                    hint1: '이 수열은 등비수열입니다.',
+                    hint2: `각 항에 ${ratio}를 곱하면 다음 항이 됩니다.`,
+                    explanation: `등비수열입니다. 첫째항이 ${first}이고 공비가 ${ratio}인 등비수열의 일반항은 a_n = ${first} × ${ratio}^(n-1) 입니다. 따라서 5번째 항은 ${numbers[4]}입니다.`
+                };
+            }
+            
+            static generateQuadratic() {
+                const numbers = [];
+                for (let i = 1; i <= 7; i++) {
+                    numbers.push(i * i);
+                }
+                
+                return {
+                    numbers,
+                    answer: numbers[4],
+                    type: 'quadratic',
+                    hint1: '각 항이 어떤 수의 제곱으로 이루어져 있습니다.',
+                    hint2: '1², 2², 3², 4², ...의 형태입니다.',
+                    explanation: `제곱수 수열입니다. n번째 항은 n²입니다. 따라서 5번째 항은 5² = ${numbers[4]}입니다.`
+                };
+            }
+            
+            static generateFibonacci() {
+                const numbers = [1, 1];
+                for (let i = 2; i < 7; i++) {
+                    numbers.push(numbers[i-1] + numbers[i-2]);
+                }
+                
+                return {
+                    numbers,
+                    answer: numbers[4],
+                    type: 'fibonacci',
+                    hint1: '앞의 두 항을 더하면 다음 항이 됩니다.',
+                    hint2: '1+1=2, 1+2=3, 2+3=5... 이런 규칙입니다.',
+                    explanation: `피보나치 수열입니다. 앞의 두 항을 더해서 다음 항을 만듭니다. ${numbers[2]}+${numbers[3]}=${numbers[4]}이므로 5번째 항은 ${numbers[4]}입니다.`
+                };
+            }
+            
+            static generatePolynomial() {
+                const numbers = [];
+                for (let i = 1; i <= 7; i++) {
+                    numbers.push(Math.pow(2, i) - 1);
+                }
+                
+                return {
+                    numbers,
+                    answer: numbers[4],
+                    type: 'polynomial',
+                    hint1: '각 항에 1을 더한 후 살펴보세요.',
+                    hint2: '2, 4, 8, 16... 2의 거듭제곱과 관련이 있습니다.',
+                    explanation: `이 수열은 2^n - 1 형태입니다. 각 항에 1을 더하면 2의 거듭제곱이 됩니다. 5번째 항은 2^5 - 1 = 32 - 1 = ${numbers[4]}입니다.`
+                };
+            }
+        }
+
+        function displaySequence(sequence) {
+            const grid = document.getElementById('sequenceGrid');
+            grid.innerHTML = '';
+            
+            sequence.numbers.forEach((number, index) => {
+                const box = document.createElement('div');
+                box.className = index === 4 ? 'sequence-box hidden-box' : 'sequence-box number-box';
+                box.textContent = index === 4 ? '?' : number;
+                grid.appendChild(box);
+            });
+        }
+
+        function checkAnswer() {
+            const input = document.getElementById('answerInput');
+            const userAnswer = parseInt(input.value);
+            const feedback = document.getElementById('feedback');
+            
+            if (isNaN(userAnswer)) {
+                feedback.textContent = '숫자를 입력해주세요!';
+                feedback.className = 'feedback error';
+                return;
+            }
+            
+            if (userAnswer === currentSequence.answer) {
+                feedback.textContent = '🎉 정답입니다! 잘하셨어요!';
+                feedback.className = 'feedback success';
+            } else {
+                feedback.textContent = '❌ 틀렸습니다. 다시 시도해보세요!';
+                feedback.className = 'feedback error';
+            }
+        }
+
+        function showHint() {
+            const modal = document.getElementById('hintModal');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
+            
+            if (hintStep === 0) {
+                title.textContent = '힌트 1';
+                content.textContent = currentSequence.hint1;
+                hintStep = 1;
+            } else {
+                title.textContent = '힌트 2';
+                content.textContent = currentSequence.hint2;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function showAnswer() {
+            const modal = document.getElementById('hintModal');
+            const title = document.getElementById('modalTitle');
+            const content = document.getElementById('modalContent');
+            
+            title.textContent = '정답 및 해설';
+            content.innerHTML = `
+                <p><strong>정답: ${currentSequence.answer}</strong></p>
+                <br>
+                <p>${currentSequence.explanation}</p>
+            `;
+            
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('hintModal').style.display = 'none';
+        }
+
+        function newProblem() {
+            currentSequence = SequenceGenerator.generateRandomSequence();
+            displaySequence(currentSequence);
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+            hintStep = 0;
+        }
+
+        // 엔터 키 이벤트
+        document.getElementById('answerInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // 모달 외부 클릭 시 닫기
+        document.getElementById('hintModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // 초기 문제 생성
+        newProblem();
+    </script>
+</body>
+</html>
